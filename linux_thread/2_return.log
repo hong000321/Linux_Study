@@ -1,0 +1,9 @@
+hong0@hdo-rasp-cli:~/Linux_Study/linux_thread $ ./2_thread_no_mutex.out 
+Dec : 1 < Before
+Dec : 0 > After
+Inc : 1 < Before
+Inc : 1 > After
+main : 1
+hong0@hdo-rasp-cli:
+
+
