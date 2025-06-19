@@ -1,0 +1,15 @@
+[Unit]
+Descriptor=Web Server
+
+[Service]
+Type=simple
+User=hong0
+ExecStart=/home/hong0/Linux_Study/linux_network/8-1_webserver.out 8000
+TimeoutSec=0
+StandardOutput=tty
+RemainAfterExit=yes
+WorkingDirectory=/home/hong0/Linux_Study/linux_network
+
+[Install]
+WantedBy=multi-user.target
+

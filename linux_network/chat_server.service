@@ -1,0 +1,14 @@
+[Unit]
+Descriptor=Chat Server
+
+[Service]
+Type=simple
+User=hong0
+ExecStart=/home/hong0/Linux_Study/linux_network/7-1_epoll_chat_server.out
+TimeoutSec=0
+StandardOutput=tty
+RemainAfterExit=yes
+WorkingDirectory=/home/hong0/Linux_Study/linux_network
+
+[Install]
+WantedBy=multi-user.target
