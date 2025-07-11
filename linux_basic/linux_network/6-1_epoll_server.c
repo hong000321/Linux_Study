@@ -108,9 +108,9 @@ int main(int argc, char **argv){
                 if((n=read(events[i].data.fd, mesg, sizeof(mesg)))>0){
                     printf("Received data : %s", mesg);
                     write(events[i].data.fd, mesg,n);
-                    close(events[i].data.fd);
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-                    nfds--;
+                    // close(events[i].data.fd);
+                    // epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+                    // nfds--;
                 }
             }
         }
