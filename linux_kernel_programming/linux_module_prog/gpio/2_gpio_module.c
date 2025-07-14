@@ -77,10 +77,10 @@ int init_module(void){
         return -1;
     }
 
-    printk("'mknod /dev%s c %d 0'\n", GPIO_DEVICE, GPIO_MAJOR);
+    printk("'mknod /dev/%s c %d 0'\n", GPIO_DEVICE, GPIO_MAJOR);
     printk("'chmod 666 /dev/%s'\n", GPIO_DEVICE);
 
-    map = ioremap(GPIO+BASE, GPIO_SIZE);
+    map = ioremap(GPIO_BASE, GPIO_SIZE);
     if(!map){
         printk("Error : mapping GPIO memory\n");
         iounmap(map);
@@ -138,7 +138,7 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 
     (!strcmp(msg, "0"))?GPIO_CLR(GPIO_LED):GPIO_SET(GPIO_LED);
 
-    printk("GPIO Device(%d) write : %s(%d)\n", MAJOR(inode->f_path.dentry->d_inode->irdev), msg, len);
+    printk("GPIO Device(%d) write : %s(%ld)\n", MAJOR(inode->f_path.dentry->d_inode->i_rdev), msg, len);
 
     return count;
 }
