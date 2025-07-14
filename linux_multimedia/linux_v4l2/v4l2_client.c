@@ -113,7 +113,7 @@ int send_frame_to_server(int sockfd, uint8_t *data, int size)
 int main() 
 {
     // init network
-    int sockfd;
+    int sockfd;  // 종료 시 해제 필요
     char *address = "127.0.0.1";
     int port = 5100;
     int ret = init_socket(&sockfd, address, port);
@@ -123,9 +123,9 @@ int main()
     }
 
     // init v4l2 cam
-    int videofd;
+    int videofd;  // 종료 시 해제 필요
     struct v4l2_format fmt;
-    char *v4l2_data;
+    char *v4l2_data;  // 종료 시 해제 필요
     ret = init_v4l2(&videofd, &fmt, &v4l2_data);
     if(ret == -1){
         printf("v4l2 initialization is failed!!!\n");

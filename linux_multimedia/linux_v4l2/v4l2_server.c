@@ -187,8 +187,8 @@ int main(int argc, char **argv)
 {
 
     // init network
-    int sockfd = -1;
-    int csock = -1;
+    int sockfd = -1;  // 종료 시 해제 필요
+    int csock = -1;  // 종료 시 해제 필요
     char *address = "127.0.0.1";
     int port = 5100;
     int ret = init_socket(&sockfd, address, port, &csock);
@@ -198,17 +198,17 @@ int main(int argc, char **argv)
     }
 
     // init v4l2 cam data buffer
-    char *v4l2_data = malloc(WIDTH*HEIGHT*2);
+    char *v4l2_data = malloc(WIDTH*HEIGHT*2);  // 종료 시 해제 필요
     if (!v4l2_data) {
         perror("Failed to allocate buffer");
         return 1;
     }
 
     // init display frame buffer
-    int fb_fd;
-    uint16_t *fbp;
+    int fb_fd;  // 종료 시 해제 필요
+    uint16_t *fbp;  // 종료 시 해제 필요
     uint32_t screan_size;
-    ret = init_fb(&fb_fd, &fbp, &screan_size);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+    ret = init_fb(&fb_fd, &fbp, &screan_size);
     if(ret == -1){
         printf("frame buffer initialization is failed!!!\n");
         return -1;
