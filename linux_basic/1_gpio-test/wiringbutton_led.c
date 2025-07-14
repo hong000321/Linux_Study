@@ -2,14 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+#define BUTTON_GPIO 0
 int ledControl(int gpio){
     int i;
     pinMode(gpio, OUTPUT);
-    pinMode(1, INPUT);  // Assuming GPIO pin 1 is used for a button
+    pinMode(BUTTON_GPIO, INPUT);  // Assuming GPIO pin 1 is used for a button
 
     while(1){
-        if(digitalRead(1) == HIGH) {
+        if(digitalRead(BUTTON_GPIO) == LOW) {
             printf("Button is pressed, starting LED control...\n");
             digitalWrite(gpio, HIGH);  // Turn the LED on
             delay(100);
