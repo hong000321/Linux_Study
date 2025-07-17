@@ -132,6 +132,7 @@ int main()
         return -1;
     }
 
+    int count = 0;
     // v4l2로 camera에서 image frame data를 가져온 후 server로 전달하는 반복문
     while (1) {
         ret = read(videofd, v4l2_data, fmt.fmt.pix.sizeimage);
@@ -141,10 +142,13 @@ int main()
         }
 
         // buffer에 읽어온 프레임 데이터를 처리
-        printf("Captured frame size: %d bytes\n", ret);
+        count++;
+        printf("%5d:Captured frame size: %d bytes\n",count, ret);
         ret = send_frame_to_server(sockfd, v4l2_data, ret); // server로 이미지 전송
-        sleep(0.5);
+        
+        // sleep(0.5);
         if(ret<0){
+            printf("server is disconnected!! \n");
             return -1;
         }
     }

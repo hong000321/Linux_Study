@@ -23,6 +23,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+#include <sys/time.h>
+
 #define FRAMEBUFFER_DEVICE  "/dev/fb0"  // 출력할 display frame buffer
 #define WIDTH               640         // 640*480 크기의 v4l2 입력
 #define HEIGHT              480
@@ -183,13 +185,45 @@ void display_frame(uint16_t *fbp, uint8_t *data, int width, int height)
     }
 }
 
+
+/**
+ * @brief client 가 보낸 데이터가 MTU나 TCP 버퍼 크기 제한등에 의해 나눠져서 올 수 있기 때문에 frame을 한번에 받을 수 있는 함수 구현
+ * 
+ * @param csock         : client 소켓
+ * @param v4l2_data     : 저장할 v4l2 data 포인터
+ * @return int          : 받은 데이터 크기
+ */
+int read_frame(int csock, char *v4l2_data){
+    int ret, size=0;
+    memset(v4l2_data,0,WIDTH*HEIGHT*2);
+    while(1){
+        // client로 부터 데이터 수신
+        // client로 부터 받는 데이터는 실제 frame크기가 아닌 쪼개진 데이터일 수 있기 때문에
+        // 받은 데이터 크기를 확인하여 실제 frame크기가 될때까지 받도록 while문을 돌림
+        ret = read(csock, v4l2_data+size, WIDTH*HEIGHT*2);
+        if (ret == -1) {
+            perror("Failed to read frame");
+            break;
+        }
+        if(ret == 0){
+            // client가 끊겨서 read()의 return 값인 수신한 데이터 크기가 0
+            return 0;
+        }
+        size += ret;
+        if(size >= WIDTH*HEIGHT*2){
+            break;
+        }
+    }
+    return size;
+}
+
 int main(int argc, char **argv)
 {
 
     // init network
     int sockfd = -1;  // 종료 시 해제 필요
     int csock = -1;  // 종료 시 해제 필요
-    char *address = "127.0.0.1";
+    char *address = "127.0.0.1";  // loopback ip 사용
     int port = 5100;
     int ret = init_socket(&sockfd, address, port, &csock);
     if(ret<0){
@@ -216,34 +250,37 @@ int main(int argc, char **argv)
 
     // client에서 보낸 v4l2 camera image를 display_frame을 사용하여 frame buffer에 출력
     int stop = 0;
+    int size = 0;
+    int count = 0;
+    
+    struct timeval start, finish;
+    double duration;
+    gettimeofday(&start, NULL);  // 실제 시간 측정 시작
+    printf("Start Server!!!\n");
     while (1)
     {
-        int ret, size=0;
-        memset(v4l2_data,0,WIDTH*HEIGHT*2);
-        while(1){
-            // client로 부터 데이터 수신
-            // client로 부터 받는 데이터는 실제 frame크기가 아닌 쪼개진 데이터일 수 있기 때문에
-            // 받은 데이터 크기를 확인하여 실제 frame크기가 될때까지 받도록 while문을 돌림
-            ret = read(csock, v4l2_data+size, WIDTH*HEIGHT*2);
-            if (ret == -1) {
-                perror("Failed to read frame");
-                break;
-            }
-            if(ret == 0){
-                stop = 1;
-                break;
-            }
-            size += ret;
-            if(size >= WIDTH*HEIGHT*2){
-                break;
-            }
-        }
-        if(stop){
+        size = read_frame(csock, v4l2_data);
+        if(size == 0){
             printf("client is disconnected\n");
             break;
         }
+        if(size != WIDTH*HEIGHT*2){
+            printf("invalid size!! \n");
+            continue;
+        }
+        count++;
+        if(count>=60){
+            gettimeofday(&finish, NULL);
+
+            duration = (finish.tv_sec - start.tv_sec) + (finish.tv_usec - start.tv_usec) / 1000000.0;
+
+
+            printf("fps = %lf   (duration = %lf)\n", 60/duration, duration);
+            count = 0;
+            gettimeofday(&start, NULL);  // 새로운 측정 시작
+        }
+        
         // v4l2_data 읽어온 프레임 데이터를 처리
-        printf("Captured frame size: %d bytes\n", size);
         display_frame(fbp, v4l2_data, WIDTH, HEIGHT);
     }
 
