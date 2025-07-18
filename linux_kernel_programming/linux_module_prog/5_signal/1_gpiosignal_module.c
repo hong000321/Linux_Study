@@ -79,6 +79,10 @@ static void timer_func(struct timer_list *t){
 }
 
 static irqreturn_t isr_func(int irq, void *data){
+    if(task == NULL){
+        printk("Error(isr) : Can't find PID from user application\n");
+        return IRQ_HANDLED;
+    }
     printk("cur_val = %d\n",gpio_get_value(GPIO_LED));
     if(mutex_trylock(&led_mutex) != 0){
         if(irq == switch_irq && !gpio_get_value(GPIO_LED)){
@@ -184,7 +188,9 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 
     memset(msg, 0, BLOCK_SIZE);
     count = copy_from_user(msg, buff, len);
-    if(count<=0){
+    printk("Commnad : %s(%d)\n", msg,count);
+    if(count<0){
+        printk("copy_from_user error\n");
         return 0;
     }
 
@@ -211,15 +217,22 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 
     //시그널 발생 시 보낼 프로세스 ID 를 등록
     pid = simple_strtol(pidstr, &endptr, 10);
-    if(endptr != NULL){
+    printk("Pid int : %d\n", pid);
+    if(pid>0){
         task = pid_task(find_vpid(pid), PIDTYPE_PID);
         if(task == NULL){
             printk("Error : Can't find PID from user application\n");
             return 0;
         }
+    }else{
+        printk("Error : pid error (%d)\n", pid);
     }
     return count;
 }
+
+
+
+
 
 
 
