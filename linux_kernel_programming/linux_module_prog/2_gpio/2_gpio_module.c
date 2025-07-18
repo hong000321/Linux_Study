@@ -77,8 +77,8 @@ int init_module(void){
         return -1;
     }
 
-    printk("'mknod /dev/%s c %d 0'\n", GPIO_DEVICE, GPIO_MAJOR);
-    printk("'chmod 666 /dev/%s'\n", GPIO_DEVICE);
+    printk("'sudo mknod /dev/%s c %d 0'\n", GPIO_DEVICE, GPIO_MAJOR);
+    printk("'sudo chmod 666 /dev/%s'\n", GPIO_DEVICE);
 
     map = ioremap(GPIO_BASE, GPIO_SIZE);
     if(!map){
