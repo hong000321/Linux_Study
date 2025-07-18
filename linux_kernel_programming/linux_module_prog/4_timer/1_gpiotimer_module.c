@@ -68,25 +68,25 @@ static DEFINE_MUTEX(led_mutex);
 
 static void timer_func(struct timer_list *t){
     
-    // if(mutex_trylock(&led_mutex) != 0){
+    if(mutex_trylock(&led_mutex) != 0){
         static int ledflag = 1;
         gpio_set_value(GPIO_LED, ledflag);
         ledflag = !ledflag;
-    //     mutex_unlock(&led_mutex);
-    // }
-    mod_timer(&timer, jiffies + (1));
+        mutex_unlock(&led_mutex);
+    }
+    mod_timer(&timer, jiffies + (1*HZ));
 }
 
 static irqreturn_t isr_func(int irq, void *data){
     printk("cur_val = %d\n",gpio_get_value(GPIO_LED));
-    // if(mutex_trylock(&led_mutex) != 0){
+    if(mutex_trylock(&led_mutex) != 0){
         if(irq == switch_irq && !gpio_get_value(GPIO_LED)){
             gpio_set_value(GPIO_LED, 1);
         }else if(irq == switch_irq && gpio_get_value(GPIO_LED)){
             gpio_set_value(GPIO_LED, 0);
         }
-    //     mutex_unlock(&led_mutex);
-    // }
+        mutex_unlock(&led_mutex);
+    }
     
     return IRQ_HANDLED;
 }
@@ -180,7 +180,7 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
     }else{
         timer_setup(&timer, timer_func, 0);
 
-        timer.expires = jiffies + (1);
+        timer.expires = jiffies + (1*HZ);
         add_timer(&timer);
     }
     

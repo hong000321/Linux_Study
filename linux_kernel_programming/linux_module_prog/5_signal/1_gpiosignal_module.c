@@ -75,7 +75,7 @@ static void timer_func(struct timer_list *t){
         ledflag = !ledflag;
         mutex_unlock(&led_mutex);
     }
-    mod_timer(&timer, jiffies + (1));
+    mod_timer(&timer, jiffies + (1*HZ));
 }
 
 static irqreturn_t isr_func(int irq, void *data){
@@ -85,7 +85,7 @@ static irqreturn_t isr_func(int irq, void *data){
             gpio_set_value(GPIO_LED, 1);
         }else if(irq == switch_irq && gpio_get_value(GPIO_LED)){
             static struct kernel_siginfo sinfo;
-            memset(&sinfo, 0, sizeof(struct kernel_signinfo));
+            memset(&sinfo, 0, sizeof(struct kernel_siginfo));
             sinfo.si_signo = SIGIO;
             sinfo.si_code = SI_USER;
             send_sig_info(SIGIO, &sinfo, task);
@@ -184,6 +184,9 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
 
     memset(msg, 0, BLOCK_SIZE);
     count = copy_from_user(msg, buff, len);
+    if(count<=0){
+        return 0;
+    }
 
     // write() 함수로부터 메시지(명령:PID) 를 분석하여 명령과 PID로 분리
     str = kstrdup(msg, GFP_KERNEL);
@@ -199,7 +202,7 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
     }else{
         timer_setup(&timer, timer_func, 0);
 
-        timer.expires = jiffies + (1);
+        timer.expires = jiffies + (1*HZ);
         add_timer(&timer);
     }
     
@@ -217,6 +220,7 @@ static ssize_t gpio_write(struct file *inode, const char *buff, size_t len, loff
     }
     return count;
 }
+
 
 
 

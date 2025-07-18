@@ -28,10 +28,14 @@ int main(int argc, char **argv){
     fd = open("/dev/gpioled", O_RDWR);
     sprintf(buf, "%s:%d", argv[1], getpid());
     
-    write(fd, argv[1], strlen(argv[1]));
-    read(fd, buf, strlen(argv[1]));
-
+    write(fd, buf, strlen(buf));
+    if(read(fd, buf, strlen(buf)) != 0){
+        printf("Success : read()\n");
+    }
     printf("Read data : %s\n", buf);
+    printf("My PID is %d.\n", getpid());
+
+    while(1);
     close(fd);
 
     return 0;
